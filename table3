@@ -1,0 +1,182 @@
+# Load necessary packages
+if (!requireNamespace("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+library(pacman)
+pacman::p_load(
+  dplyr,
+  haven,
+  here,
+  fixest
+)
+
+# Load data
+village_250 <- read_dta("C:/Users/yoshimura hiroki/Box/Personal/topic/coding/github_practice/RA/task/192721-V1/datasets/final/village_250.dta")
+
+# Initialize results list
+results <- list()
+
+# Define variable list
+varlist <- c("nbfeatures18_250", "hadconflict6_250")
+
+# Loop through variables
+for (var in varlist) {
+  
+  # Define panel based on variable
+  panel <- if (var == "nbfeatures18_250") "a" else "b"
+  
+  # 2012-2014
+  # (1) RCT
+  model1_2012_2014 <- feols(as.formula(paste(var, "~ villagehadCT2y | year*communeid")), 
+                            data = village_250 %>% filter(communewave_min >= 2012 & communewave_min <= 2014), 
+                            cluster = ~communeid)
+  results[[paste0("R_", var, "_1b")]] <- model1_2012_2014
+  
+  # (2) TWFE
+  model2_2012_2014 <- feols(as.formula(paste(var, "~ villagehadCT2y | year + communeid")), 
+                            data = village_250 %>% filter(communewave_min >= 2012 & communewave_min <= 2014), 
+                            cluster = ~communeid)
+  results[[paste0("R_", var, "_2b")]] <- model2_2012_2014
+  
+  # 2015-2018
+  # (1) RCT
+  model1_2015_2018 <- feols(as.formula(paste(var, "~ villagehadCT2y | year*communeid")), 
+                            data = village_250 %>% filter(communewave_min >= 2015 & communewave_min <= 2018), 
+                            cluster = ~communeid)
+  results[[paste0("R_", var, "_3b")]] <- model1_2015_2018
+  
+  # (2) TWFE
+  model2_2015_2018 <- feols(as.formula(paste(var, "~ villagehadCT2y | year + communeid")), 
+                            data = village_250 %>% filter(communewave_min >= 2015 & communewave_min <= 2018), 
+                            cluster = ~communeid)
+  results[[paste0("R_", var, "_4b")]] <- model2_2015_2018
+  
+  # Combine results for table
+  assign(paste0("R_table4_", panel), list(
+    results[[paste0("R_", var, "_2b")]],
+    results[[paste0("R_", var, "_1b")]],
+    results[[paste0("R_", var, "_4b")]],
+    results[[paste0("R_", var, "_3b")]]
+  ))
+}
+
+# Generate tables
+tex_code_a <- etable(
+  get("R_table4_a"),
+  tex = TRUE,
+  title = "EFFECT OF CASH TRANSFERS ON SEVERE CONFLICT EVENTS (Nearest Neighbor)",
+  label = "tab:regression_results_a",
+  dict = c(
+    villagehadCT2y = "Treated (Last 2 years)",
+    nbfeatures18_250 = "Nearest Neighbor",
+    hadconflict6_250 = "10km Radius",
+    year = "year FE",
+    communeid = "commune FE",
+    `year:communeid` = "commune x year FE"
+  ),
+  fitstat = ~ n + r2,
+  digits = 5
+)
+
+tex_code_b <- etable(
+  get("R_table4_b"),
+  tex = TRUE,
+  title = "EFFECT OF CASH TRANSFERS ON SEVERE CONFLICT EVENTS (10km Radius)",
+  label = "tab:regression_results_b",
+  dict = c(
+    villagehadCT2y = "Treated (Last 2 years)",
+    nbfeatures18_250 = "Nearest Neighbor",
+    hadconflict6_250 = "10km Radius",
+    year = "year FE",
+    communeid = "commune FE",
+    `year:communeid` = "commune x year FE"
+  ),
+  fitstat = ~ n + r2,
+  digits = 5
+)
+
+cat(tex_code_a)
+cat(tex_code_b)
+
+# Format tables
+tex_code_a <- gsub(
+  "\\\\begin\\{tabular\\}\\{lcccc\\}",
+  "\\\\begin\\{tabularx\\}\\{\\\\textwidth\\}\\{lXXXX\\}",
+  tex_code_a
+)
+tex_code_a <- gsub(
+  "\\\\end\\{tabular\\}",
+  "\\\\end\\{tabularx\\}",
+  tex_code_a
+)
+
+
+# Use gsub to insert the new line
+
+
+cat(tex_code_a)
+
+
+tex_code_a <- gsub(
+  "Dependent Variable: & \\\\multicolumn\\{4\\}\\{c\\}\\{Nearest Neighbor\\}\\\\",
+  "Dependent Variable: & \\\\multicolumn{4}{c}{Nearest Neighbor}\\\\\\\\\n       & 2012-2014TWFE &  2012-2014RCT &  2015-2018TWFE & 2015-2018RCT\\\\",
+  tex_code_a
+)
+
+
+
+cat(tex_code_a)
+
+
+
+
+
+
+tex_code_a <- gsub(
+  "\\\\multicolumn\\{5\\}\\{l\\}\\{\\\\emph\\{Clustered \\(commune FE\\) standard-errors in parentheses\\}\\}\\\\\\\\",
+  "",
+  tex_code_a
+)
+tex_code_a <- gsub("commune x year FE", "commune $\\\\times$ year FE", tex_code_a)
+tex_code_a <- gsub("&                 &", "& No            &", tex_code_a)
+tex_code_a <- gsub("&           &", "& No      &", tex_code_a)
+
+
+
+tex_code_b <- gsub(
+  "\\\\begin\\{tabular\\}\\{lcccc\\}",
+  "\\\\begin\\{tabularx\\}\\{\\\\textwidth\\}\\{lXXXX\\}",
+  tex_code_b
+)
+tex_code_b <- gsub(
+  "\\\\end\\{tabular\\}",
+  "\\\\end\\{tabularx\\}",
+  tex_code_b
+)
+
+
+
+cat(tex_code_b)
+
+
+tex_code_b <- gsub(
+  "Dependent Variable: & \\\\multicolumn\\{4\\}\\{c\\}\\{10km Radius\\}\\\\",
+  "Dependent Variable: & \\\\multicolumn{4}{c}{10km Radius}\\\\\\\\\n       & 2012-2014TWFE &  2012-2014RCT &  2015-2018TWFE & 2015-2018RCT\\\\",
+  tex_code_b
+)
+
+
+
+cat(tex_code_b)
+
+
+
+tex_code_b <- gsub("commune x year FE", "commune $\\\\times$ year FE", tex_code_b)
+tex_code_b <- gsub("&                 &", "& No            &", tex_code_b)
+tex_code_b <- gsub("&           &", "& No      &", tex_code_b)
+
+
+# Display formatted LaTeX code
+cat(tex_code_a)
+cat(tex_code_b)
