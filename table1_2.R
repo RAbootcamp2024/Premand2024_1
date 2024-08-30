@@ -77,6 +77,7 @@ tex_code_final <- gsub("&                 &", "& No            &", tex_code)
 # tex_code変数に格納されたtexコードを表示
 cat(tex_code_final)
 
-writeLines(tex_code_final, "table1.tex")
+writeLines(tex_code_final, "table1.te
+           x")
 
 
