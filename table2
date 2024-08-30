@@ -1,0 +1,165 @@
+# 必要なパッケージを読み込み
+if (!requireNamespace("pacman", quietly = TRUE)) {
+  install.packages("pacman")
+}
+
+library(pacman)
+pacman::p_load(
+  dplyr,
+  haven,
+  here,
+  fixest
+)
+
+# データの読み込み
+village_250 <- read_dta("C:/Users/yoshimura hiroki/Box/Personal/topic/coding/github_practice/RA/task/192721-V1/datasets/final/village_250.dta")
+
+# 回帰分析の結果を保存するリスト
+results <- list()
+
+# 変数リスト
+varlist <- c("terror18", "nonterror18", "Terr18_and_Forgn3_18", "Terr18_and_NForgn3_18")
+
+counter <- 1
+for (var in varlist) {
+  
+  if (counter <= 2) {
+    
+    # (2) モデル2
+    model2 <- feols(as.formula(paste(var, "~ villagehadCT2y | year + communeid")), data = village_250, cluster = ~communeid)
+    results[[paste0("R_", counter, "_2a")]] <- model2
+    
+    
+    # (1) モデル1
+    model1 <- feols(as.formula(paste(var, "~ villagehadCT2y | year*communeid")), data = village_250, cluster = ~communeid)
+    results[[paste0("R_", counter, "_1a")]] <- model1
+    
+   
+    
+  } else if (counter >= 3 & counter <= 4) {
+    
+    # (2) モデル2
+    model2 <- feols(as.formula(paste(var, "~ villagehadCT2y | year + communeid")), data = village_250, cluster = ~communeid)
+    results[[paste0("R_", counter, "_2b")]] <- model2
+    
+    # (1) モデル1
+    model1 <- feols(as.formula(paste(var, "~ villagehadCT2y | year*communeid")), data = village_250, cluster = ~communeid)
+    results[[paste0("R_", counter, "_1b")]] <- model1
+    
+
+  }
+  
+  counter <- counter + 1
+}
+
+# 結果のテーブルを作成
+tex_code <- etable(
+  results[1:4],
+  tex = TRUE,
+  title = "EFFECT OF CASH TRANSFERS ON SEVERE CONFLICT EVENTS",
+  label = "tab:regression_results",
+  dict = c(
+    villagehadCT2y = "Treated (Last 2 years)",
+    terror18 = "Severe conflict involving terrorism",
+    nonterror18 = "Severe conflict not involving terrorism",
+    Terr18_and_Forgn3_18 = "Severe conflict involving terrorism and foreign actors",
+    Terr18_and_NForgn3_18 = "Severe conflict involving terrorism and domestic actors",
+    year = "year FE",
+    communeid = "commune FE",
+    `year:communeid` = "commune x year FE"
+  ),
+  fitstat = ~ n + r2,
+  digits = 5
+)
+
+cat(tex_code)
+
+
+# 文字列を追加
+
+# 文字列を追加
+tex_code <- gsub(
+  "Dependent Variables: & \\\\multicolumn\\{2\\}\\{c\\}\\{Severe conflict involving terrorism\\} & \\\\multicolumn\\{2\\}\\{c\\}\\{Severe conflict not involving terrorism\\}\\\\",
+  "Dependent Variables: & \\\\multicolumn\\{2\\}\\{c\\}\\{Severe conflict involving terrorism\\} & \\\\multicolumn\\{2\\}\\{c\\}\\{Severe conflict not involving terrorism\\}\\\\\\\\\n & TWFE & RCT & TWFE & RCT\\\\",
+  tex_code
+)
+
+
+# 不要な行を削除
+tex_code<- gsub("\\\\multicolumn\\{5\\}\\{l\\}\\{\\\\emph\\{Clustered \\(commune FE\\) standard-errors in parentheses\\}\\}\\\\\\\\", "", tex_code)
+
+# commune x year FEをcommune × year FEに変更し、空白をNOに置換
+tex_code <- gsub("commune x year FE", "commune $\\\\times$ year FE", tex_code)
+tex_code <- gsub("&                &", "& No            &", tex_code)
+tex_code_final1 <- gsub("&           &", "& No      &", tex_code)
+
+
+
+# tex_code変数に格納されたtexコードを表示
+cat(tex_code_final1)
+
+
+
+# 結果のテーブルを作成
+tex_code <- etable(
+  results[5:8],
+  tex = TRUE,
+  title = "EFFECT OF CASH TRANSFERS ON SEVERE CONFLICT EVENTS",
+  label = "tab:regression_results",
+  dict = c(
+    villagehadCT2y = "Treated (Last 2 years)",
+    terror18 = "Severe conflict involving terrorism",
+    nonterror18 = "Severe conflict not involving terrorism",
+    Terr18_and_Forgn3_18 = "Severe conflict involving terrorism and foreign actors",
+    Terr18_and_NForgn3_18 = "Severe conflict involving terrorism and domestic actors",
+    year = "year FE",
+    communeid = "commune FE",
+    `year:communeid` = "commune x year FE"
+  ),
+  fitstat = ~ n + r2,
+  digits = 5
+)
+
+cat(tex_code)
+
+
+# 文字列を追加
+
+
+
+
+
+
+tex_code <- gsub(
+  "\\\\begin\\{tabular\\}\\{lcccc\\}",
+  "\\\\begin\\{tabularx\\}\\{\\\\textwidth\\}\\{lXXXX\\}",
+  tex_code
+)
+
+tex_code <- gsub(
+  "\\\\end\\{tabular\\}",
+  "\\\\end\\{tabularx\\}",
+  tex_code
+)
+
+
+
+tex_code <- gsub(
+  "Dependent Variables: & \\\\multicolumn\\{2\\}\\{c\\}\\{Severe conflict involving terrorism and foreign actors\\} & \\\\multicolumn\\{2\\}\\{c\\}\\{Severe conflict involving terrorism and domestic actors\\}\\\\",
+  "Dependent Variables: & \\\\multicolumn\\{2\\}\\{c\\}\\{\\\\makecell\\{Severe conflict involving terrorism \\\\\\\\ and foreign actors\\}\\} & \\\\multicolumn\\{2\\}\\{c\\}\\{\\\\makecell\\{Severe conflict involving terrorism \\\\\\\\ and domestic actors\\}\\}\\\\\\\\\n & TWFE & RCT & TWFE & RCT\\\\",
+  tex_code
+)
+
+
+# 不要な行を削除
+tex_code<- gsub("\\\\multicolumn\\{5\\}\\{l\\}\\{\\\\emph\\{Clustered \\(commune FE\\) standard-errors in parentheses\\}\\}\\\\\\\\", "", tex_code)
+
+# commune x year FEをcommune × year FEに変更し、空白をNOに置換
+tex_code <- gsub("commune x year FE", "commune $\\\\times$ year FE", tex_code)
+tex_code <- gsub("&               &", "& No            &", tex_code)
+tex_code_final2 <- gsub("&           &", "& No      &", tex_code)
+
+
+
+# tex_code変数に格納されたtexコードを表示
+cat(tex_code_final2)
