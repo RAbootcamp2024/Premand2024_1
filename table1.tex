@@ -1,0 +1,26 @@
+\begin{table}[htbp]
+   \caption{\label{tab:regression_results} EFFECT OF CASH TRANSFERS ON SEVERE CONFLICT EVENTS}
+   \centering
+   \begin{tabular}{lcccc}
+      \tabularnewline \midrule \midrule
+      Dependent Variables: & \multicolumn{2}{c}{nearest neighbor} & \multicolumn{2}{c}{10km radius}\\
+ & TWFE & RCT & TWFE & RCT\\
+      Model:                 & (1)            & (2)            & (3)             & (4)\\  
+      \midrule
+      \emph{Variables}\\
+      Treated (Last 2 years) & 0.00511$^{**}$ & 0.00631$^{**}$ & 0.03848$^{***}$ & 0.01675$^{*}$\\   
+                             & (0.00214)      & (0.00255)      & (0.01427)       & (0.00883)\\   
+      \midrule
+      \emph{Fixed-effects}\\
+      year FE                & Yes            & Yes            & Yes             & Yes\\  
+      commune FE             & Yes            & Yes            & Yes             & Yes\\  
+      commune $\times$ year FE      & No            & Yes            & No            & Yes\\  
+      \midrule
+      \emph{Fit statistics}\\
+      Observations           & 61,198         & 61,198         & 61,198          & 61,198\\  
+      R$^2$                  & 0.01855        & 0.04481        & 0.10814         & 0.27812\\  
+      \midrule \midrule
+      
+      \multicolumn{5}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
+   \end{tabular}
+\end{table}

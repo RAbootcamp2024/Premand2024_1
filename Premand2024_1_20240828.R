@@ -269,4 +269,22 @@ village_all_terror <- village_all_terror %>%
     foreign_terror_Max=="" ~ 0,
     nbfeatures18_250==1 & foreign_terror_Max==0 ~ 0))
 
+village_all_terror <- village_all_terror %>% 
+  mutate(nonterror18 = case_when(
+    nbfeatures18_250 == 1 & terror18==0 ~ 1,
+    terror18==1 & nbfeatures18_250==1 ~ 0,
+    terror18==0 & nbfeatures18_250==0 ~ 0,
+    ))
+
+# table関数を使用してカテゴリの頻度を計算
+tab_result_1 <- table(village_all_terror$terror18, 
+                    village_all_terror$nbfeatures18_250)
+
+tab_result_2 <- table(village_all_terror$nonterror18, 
+                    village_all_terror$nbfeatures18_250)
+
+tab_result_3 <- table(village_all_terror$terror18, 
+                    village_all_terror$nonterror18)
+
+
 
