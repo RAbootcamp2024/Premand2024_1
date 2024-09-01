@@ -1,0 +1,14 @@
+# 条件を含むテキストファイルの読み込み
+conditions <- readLines("C:/Users/yoshimura hiroki/Box/Personal/topic/coding/github_practice/RA/task/textfile.txt")
+# 条件をRコードに変換
+r_code <- "df <- df %>%\n  mutate(foreign_terror = ifelse(sourceurl == \"\", NA, foreign_terror)) %>%\n  mutate(foreign_terror = ifelse(grepl(\"^http\", sourceurl) == FALSE, NA, foreign_terror))"
+
+for (condition in conditions) {
+  if (grepl("strpos", condition)) {
+    url <- sub(".*strpos\\(sourceurl, \"(.*)\"\\).*", "\\1", condition)
+    r_code <- paste0(r_code, " %>%\n  mutate(foreign_terror = ifelse(grepl(\"", url, "\", sourceurl), NA, foreign_terror))")
+  }
+}
+
+# 結果を表示
+cat(r_code)
